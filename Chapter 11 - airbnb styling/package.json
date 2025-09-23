@@ -1,0 +1,22 @@
+{
+  "name": "airbnb",
+  "version": "1.0.0",
+  "description": "Airbnb BE",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "author": "Pranav Maheswahri",
+  "license": "ISC",
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "nodemon": "^3.1.10",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.13"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.1.13",
+    "express": "^5.1.0"
+  }
+}
