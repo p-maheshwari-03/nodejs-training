@@ -1,5 +1,5 @@
-const Home = require("../models/home");
 const Favourite = require("../models/favourite");
+const Home = require("../models/home");
 
 exports.getIndex = (req, res, next) => {
   Home.fetchAll((registeredHomes) =>
@@ -25,49 +25,55 @@ exports.getBookings = (req, res, next) => {
   res.render("store/bookings", {
     pageTitle: "My Bookings",
     currentPage: "bookings",
-  });
+  })
 };
 
 exports.getFavouriteList = (req, res, next) => {
-  Favourite.getFavourites((favouriteIds) => {
+  Favourite.getFavourites(favourites => {
     Home.fetchAll((registeredHomes) => {
-      const filteredHomes = registeredHomes.filter((home) =>
-        favouriteIds.includes(home.id)
-      );
-
+      const favouriteHomes = registeredHomes.filter(home => favourites.includes(home.id));
       res.render("store/favourite-list", {
-        registeredHomes: filteredHomes,
+        favouriteHomes: favouriteHomes,
         pageTitle: "My Favourites",
         currentPage: "favourites",
-      });
+      })
     });
-  });
+  })
+
 };
 
 exports.postAddToFavourite = (req, res, next) => {
-  const homeId = req?.body?.id;
-  Favourite.addToFavourite(homeId, (err) => {
-    if (err) {
-      console.log("Error while marking favourite: ", err);
+  Favourite.addToFavourite(req.body.id, error => {
+    if (error) {
+      console.log("Error while marking favourite: ", error);
     }
-  });
-  res.redirect("/favourites");
-};
+    res.redirect("/favourites");
+  })
+}
+
+exports.postRemoveFromFavourite = (req, res, next) => {
+  const homeId = req.params.homeId;
+  Favourite.deleteById(homeId, error => {
+    if (error) {
+      console.log('Error while removing from Favourite', error);
+    }
+    res.redirect("/favourites");
+  })
+}
 
 exports.getHomeDetails = (req, res, next) => {
-  const homeId = req.body.homeId;
-  console.log("Requested Home ID:", homeId);
-
-  Home.findById(homeId, (home) => {
-    console.log("Fetched Home:", home);
+  const homeId = req.params.homeId;
+  Home.findById(homeId, home => {
     if (!home) {
+      console.log("Home not found");
       res.redirect("/homes");
     } else {
       res.render("store/home-detail", {
         home: home,
-        pageTitle: home.houseName,
+        pageTitle: "Home Detail",
         currentPage: "Home",
       });
     }
-  });
+  })
 };
+

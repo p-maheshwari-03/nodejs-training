@@ -3,26 +3,14 @@ const fs = require("fs");
 const path = require("path");
 const rootDir = require("../utils/pathUtil");
 
-const getUniqueId = () => {
-  let id = Math.random().toString();
-
-  if (id == 0 || id == 1) {
-    id = getUniqueId();
-  } else {
-    id = id.substring(2);
-    id = id.replace(/^0+|0+$/g, ""); // remove leading & trailing zeros
-  }
-
-  return id;
-};
-
 const favouriteDataPath = path.join(rootDir, "data", "favourite.json");
 
 module.exports = class Favourite {
+
   static addToFavourite(homeId, callback) {
-    this.getFavourites((favourites) => {
+    Favourite.getFavourites((favourites) => {
       if (favourites.includes(homeId)) {
-        callback("Home is already marked as favourite.");
+        callback("Home is already marked favourite");
       } else {
         favourites.push(homeId);
         fs.writeFile(favouriteDataPath, JSON.stringify(favourites), callback);
@@ -34,5 +22,12 @@ module.exports = class Favourite {
     fs.readFile(favouriteDataPath, (err, data) => {
       callback(!err ? JSON.parse(data) : []);
     });
+  }
+
+  static deleteById(delHomeId, callback) {
+    Favourite.getFavourites(homeIds => {
+      homeIds = homeIds.filter(homeId => delHomeId !== homeId);
+      fs.writeFile(favouriteDataPath, JSON.stringify(homeIds),callback);
+    })
   }
 };
