@@ -1,4 +1,5 @@
 const Home = require("../models/home");
+const fs = require("fs");
 
 exports.getAddHome = (req, res, next) => {
   res.render("host/edit-home", {
@@ -20,6 +21,7 @@ exports.getEditHome = (req, res, next) => {
       return res.redirect("/host/host-home-list");
     }
 
+    console.log(homeId, editing, home);
     res.render("host/edit-home", {
       home: home,
       pageTitle: "Edit your Home",
@@ -44,60 +46,73 @@ exports.getHostHomes = (req, res, next) => {
 };
 
 exports.postAddHome = (req, res, next) => {
-  const { houseName, price, location, rating, photoUrl, description } =
-    req.body;
+  const { houseName, price, location, rating, description } = req.body;
+  console.log(houseName, price, location, rating, description);
+  console.log(req.file);
+
+  if (!req.file) {
+    return res.status(422).send("No image provided");
+  }
+
+  const photo = req.file.path;
+
   const home = new Home({
     houseName,
     price,
     location,
     rating,
-    photoUrl,
+    photo,
     description,
   });
-
   home.save().then(() => {
-    console.log("Home Added successfully");
+    console.log("Home Saved successfully");
   });
 
   res.redirect("/host/host-home-list");
 };
 
 exports.postEditHome = (req, res, next) => {
-  const { id, houseName, price, location, rating, photoUrl, description } =
-    req.body;
-
+  const { id, houseName, price, location, rating, description } = req.body;
   Home.findById(id)
     .then((home) => {
       home.houseName = houseName;
       home.price = price;
       home.location = location;
       home.rating = rating;
-      home.photoUrl = photoUrl;
       home.description = description;
+
+      if (req.file) {
+        fs.unlink(home.photo, (err) => {
+          if (err) {
+            console.log("Error while deleting file ", err);
+          }
+        });
+        home.photo = req.file.path;
+      }
 
       home
         .save()
-        .then(() => {
-          console.log("Home Updated Successfully");
+        .then((result) => {
+          console.log("Home updated ", result);
         })
-        .catch((error) => {
-          console.log("Error while updating the home.", error);
+        .catch((err) => {
+          console.log("Error while updating ", err);
         });
-
       res.redirect("/host/host-home-list");
     })
-    .catch((error) => {
-      console.log("Home not found for updating.");
+    .catch((err) => {
+      console.log("Error while finding home ", err);
     });
 };
 
 exports.postDeleteHome = (req, res, next) => {
   const homeId = req.params.homeId;
+  console.log("Came to delete ", homeId);
   Home.findByIdAndDelete(homeId)
-    .then(() => res.redirect("/host/host-home-list"))
+    .then(() => {
+      res.redirect("/host/host-home-list");
+    })
     .catch((error) => {
-      if (error) {
-        console.log("Error while deleting ", error);
-      }
+      console.log("Error while deleting ", error);
     });
 };
